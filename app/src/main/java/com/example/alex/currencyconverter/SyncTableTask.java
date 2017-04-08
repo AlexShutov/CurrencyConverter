@@ -2,10 +2,19 @@ package com.example.alex.currencyconverter;
 
 import android.os.AsyncTask;
 
+import com.example.alex.currencyconverter.model.app.Currency;
+import com.example.alex.currencyconverter.model.web.CurrencyTable;
+import com.example.alex.currencyconverter.parsing.WebResponseParser;
+import com.example.alex.currencyconverter.parsing.impl.WebResponseSimpleXmlParser;
 import com.example.alex.currencyconverter.web.WebFetcher;
 
+import org.simpleframework.xml.core.Persister;
+
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import java.util.List;
 
 /**
  * Created by Alex on 4/8/2017.
@@ -16,14 +25,14 @@ import java.lang.ref.WeakReference;
  * library so have to stick to obsolete AsyncTask, because we need to
  * show popup after table sync is complete.
  */
-public class SyncTableTask extends AsyncTask<Void, Void, String> {
+public class SyncTableTask extends AsyncTask<Void, Void, List<Currency>> {
 
     /**
      * We need to avoid memory leaks from within AsyncTask. Wrap this interface
      * implementation into WeakReference and notify it after update is complete.
      */
     public interface SyncCallback {
-        void handleUpdateResultOnUiThread(String result);
+        void handleUpdateResultOnUiThread(List<Currency> syncedModel);
         void onSyncFailed();
     }
 
@@ -43,32 +52,42 @@ public class SyncTableTask extends AsyncTask<Void, Void, String> {
      * @return
      */
     @Override
-    protected String doInBackground(Void... params) {
+    protected List<Currency> doInBackground(Void... params) {
         String url = BuildConfig.EXCANGE_RATE_TABLE_URL;
-        WebFetcher fetcher = new WebFetcher();
-        String ratesTable;
+        SyncFacade.Builder builder = new SyncFacade.Builder();
+        // use SimpleXml library for parsing web response
+        WebResponseParser parser = new WebResponseSimpleXmlParser();
+        // uses out-of-the-box HttpUrlConnection
+        WebFetcher webFetcher = new WebFetcher();
+
+        builder.setWebAddressUrl(url);
+        builder.setParser(parser);
+        builder.setWebFetcher(webFetcher);
+        SyncFacade syncFacade = builder.build();
         try {
-            ratesTable = fetcher.loadData(url);
+            List<Currency> syncedResult = syncFacade.performSync();
+            return syncedResult;
         } catch (IOException e) {
-            ratesTable = null;
             e.printStackTrace();
+            return null;
         }
-        return ratesTable;
+
     }
 
     /**
      * Inform callback of sync success or failure
-     * @param table
+     * @param syncedModel
      */
     @Override
-    protected void onPostExecute(String table) {
+    protected void onPostExecute(List<Currency> syncedModel) {
         SyncCallback callback = uiCallback.get();
         if (null != callback){
-            if (null != table){
-                callback.handleUpdateResultOnUiThread(table);
+            if (null != syncedModel){
+                callback.handleUpdateResultOnUiThread(syncedModel);
             } else {
                 callback.onSyncFailed();
             }
         }
     }
+
 }

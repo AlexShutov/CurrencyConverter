@@ -2,6 +2,10 @@ package com.example.alex.currencyconverter;
 
 import android.app.Application;
 
+import com.example.alex.currencyconverter.model.app.Currency;
+
+import java.util.List;
+
 /**
  * Created by Alex on 4/8/2017.
  */
@@ -10,14 +14,14 @@ import android.app.Application;
  * This custom application class attempts to update saved table of exchange rates on every
  * start of application. User can request update manually.
  */
-public class UpdatinOnStartupApplication extends Application {
+public class UpdatingOnStartupApplication extends Application {
 
     private SyncTableTask syncTask;
 
     private SyncTableTask.SyncCallback syncCallback = new SyncTableTask.SyncCallback() {
         @Override
-        public void handleUpdateResultOnUiThread(String result) {
-
+        public void handleUpdateResultOnUiThread(List<Currency> syncedModel) {
+            
         }
 
         @Override
@@ -50,8 +54,8 @@ public class UpdatinOnStartupApplication extends Application {
         // create new sync task
         syncTask = new SyncTableTask(new SyncTableTask.SyncCallback() {
             @Override
-            public void handleUpdateResultOnUiThread(String result) {
-                action.handleUpdateResultOnUiThread(result);
+            public void handleUpdateResultOnUiThread(List<Currency> syncedModel) {
+                action.handleUpdateResultOnUiThread(syncedModel);
                 syncTask = null;
             }
 
