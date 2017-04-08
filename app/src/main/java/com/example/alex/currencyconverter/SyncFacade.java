@@ -8,7 +8,9 @@ import com.example.alex.currencyconverter.web.WebFetcher;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Alex on 4/8/2017.

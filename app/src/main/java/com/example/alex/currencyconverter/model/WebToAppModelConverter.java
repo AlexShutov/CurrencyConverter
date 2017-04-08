@@ -27,6 +27,8 @@ public class WebToAppModelConverter {
             strRate = strRate.replace(',', '.');
             double roublesRate = Double.parseDouble(strRate);
             converted.setExchangeValueInRoubles(roublesRate);
+            String currencyId = String.valueOf(c.getNumberCode());
+            converted.setCurrencyId(currencyId);
             currencies.add(converted);
         }
         return currencies;

@@ -13,9 +13,23 @@ import java.math.BigDecimal;
  */
 public class Currency {
 
+    /**
+     * We use integer Id, coming from a server assuming all ids are unique.
+     * On the other hand, charCode is unique for every currency too, but numberId make more sense.
+     */
+    private String currencyId;
     private String name;
     private String charCode;
     private double exchangeValueInRoubles;
+
+    public Currency(){}
+
+    public Currency(Currency other){
+        currencyId = other.currencyId;
+        name = other.name;
+        charCode = other.charCode;
+        exchangeValueInRoubles = other.exchangeValueInRoubles;
+    }
 
     public String getName() {
         return name;
@@ -39,5 +53,13 @@ public class Currency {
 
     public void setExchangeValueInRoubles(double exchangeValueInRoubles) {
         this.exchangeValueInRoubles = exchangeValueInRoubles;
+    }
+
+    public String getCurrencyId() {
+        return currencyId;
+    }
+
+    public void setCurrencyId(String currencyId) {
+        this.currencyId = currencyId;
     }
 }

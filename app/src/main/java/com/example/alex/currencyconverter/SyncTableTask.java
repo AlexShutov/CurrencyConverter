@@ -3,16 +3,12 @@ package com.example.alex.currencyconverter;
 import android.os.AsyncTask;
 
 import com.example.alex.currencyconverter.model.app.Currency;
-import com.example.alex.currencyconverter.model.web.CurrencyTable;
 import com.example.alex.currencyconverter.parsing.WebResponseParser;
 import com.example.alex.currencyconverter.parsing.impl.WebResponseSimpleXmlParser;
 import com.example.alex.currencyconverter.web.WebFetcher;
 
-import org.simpleframework.xml.core.Persister;
 
 import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -66,12 +62,12 @@ public class SyncTableTask extends AsyncTask<Void, Void, List<Currency>> {
         SyncFacade syncFacade = builder.build();
         try {
             List<Currency> syncedResult = syncFacade.performSync();
+
             return syncedResult;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-
     }
 
     /**
@@ -89,5 +85,4 @@ public class SyncTableTask extends AsyncTask<Void, Void, List<Currency>> {
             }
         }
     }
-
 }

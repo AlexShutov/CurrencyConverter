@@ -2,6 +2,7 @@ package com.example.alex.currencyconverter;
 
 import android.app.Application;
 
+import com.example.alex.currencyconverter.dao.impl.CurrencyDaoImpl;
 import com.example.alex.currencyconverter.model.app.Currency;
 
 import java.util.List;
@@ -17,11 +18,12 @@ import java.util.List;
 public class UpdatingOnStartupApplication extends Application {
 
     private SyncTableTask syncTask;
+    private CurrencyDaoImpl dao;
 
     private SyncTableTask.SyncCallback syncCallback = new SyncTableTask.SyncCallback() {
         @Override
         public void handleUpdateResultOnUiThread(List<Currency> syncedModel) {
-            
+
         }
 
         @Override
@@ -42,6 +44,7 @@ public class UpdatingOnStartupApplication extends Application {
         if (null != syncTask) {
             syncTask.cancel(true);
         }
+        dao.onDestroy();
     }
 
 
