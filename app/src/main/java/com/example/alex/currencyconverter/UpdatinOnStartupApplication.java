@@ -1,23 +1,30 @@
 package com.example.alex.currencyconverter;
 
 import android.app.Application;
-import android.os.AsyncTask;
-import android.os.Build;
-
-import com.example.alex.currencyconverter.BuildConfig;
-import com.example.alex.currencyconverter.web.WebFetcher;
-
-import java.io.IOException;
 
 /**
  * Created by Alex on 4/8/2017.
  */
 
 /**
- * This custom application class attempt to update saved table of excange rates on every
+ * This custom application class attempts to update saved table of exchange rates on every
  * start of application. User can request update manually.
  */
 public class UpdatinOnStartupApplication extends Application {
+
+    private SyncTableTask syncTask;
+
+    private SyncTableTask.SyncCallback syncCallback = new SyncTableTask.SyncCallback() {
+        @Override
+        public void handleUpdateResultOnUiThread(String result) {
+
+        }
+
+        @Override
+        public void onSyncFailed() {
+
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -28,40 +35,37 @@ public class UpdatinOnStartupApplication extends Application {
     @Override
     public void onTerminate() {
         super.onTerminate();
+        if (null != syncTask) {
+            syncTask.cancel(true);
+        }
     }
 
 
-    public void attemptSync(){
-
-        UpdateTableTask task = new UpdateTableTask();
-        task.execute();
-    }
-
-    /**
-     * Unfortunately, test assignment forbids using third- party libraries, so we can't use RxJava
-     * library so have to stick to obsolete AsyncTask for convenience, because we need to
-     * show popup after table sync is complete.
-     */
-    private static class UpdateTableTask extends AsyncTask<Void, Void, String> {
-
-        @Override
-        protected String doInBackground(Void... params) {
-            String url = BuildConfig.EXCANGE_RATE_TABLE_URL;
-            WebFetcher fetcher = new WebFetcher();
-            String ratesTable;
-            try {
-                ratesTable = fetcher.loadData(url);
-            } catch (IOException e) {
-                ratesTable = null;
-                e.printStackTrace();
+    public void attemptSync(final SyncTableTask.SyncCallback action) throws
+            IllegalStateException {
+        // sync is active
+        if (null != syncTask){
+            throw new IllegalStateException("App undergo sync right now");
+        }
+        // create new sync task
+        syncTask = new SyncTableTask(new SyncTableTask.SyncCallback() {
+            @Override
+            public void handleUpdateResultOnUiThread(String result) {
+                action.handleUpdateResultOnUiThread(result);
+                syncTask = null;
             }
-            return ratesTable;
-        }
 
-        @Override
-        protected void onPostExecute(String table) {
+            @Override
+            public void onSyncFailed() {
+                action.onSyncFailed();
+                syncTask = null;
+            }
+        });
+        syncTask.execute();
+    }
 
-        }
+    private void attemptSync() {
+        attemptSync(syncCallback);
     }
 
 }
