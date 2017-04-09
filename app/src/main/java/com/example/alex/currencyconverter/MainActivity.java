@@ -14,10 +14,13 @@ import com.example.alex.currencyconverter.model.app.Currency;
 import java.util.List;
 
 import static com.example.alex.currencyconverter.converter.ConverterModel.*;
-import static com.example.alex.currencyconverter.converter.ConverterModel.ConvertorUserActionEnum.*;
+import static com.example.alex.currencyconverter.converter.ConverterModel.ConverterUserActionEnum.*;
 
 public class MainActivity extends AppCompatActivity implements
-        UpdatableView<ConverterModel, ConverterModel.ConvertorQueryEnum, ConverterModel.ConvertorUserActionEnum> {
+        UpdatableView<ConverterModel, ConverterModel.ConvertorQueryEnum, ConverterUserActionEnum> {
+
+    private static final String KEY_CURRENCY_REQUEST_BY_ID_FROM = "currency_from";
+    private static final String KEY_CURRENCY_REQUEST_BY_ID_TO = "currency_to";
 
     private UserActionListener userActionListener;
 
@@ -29,7 +32,6 @@ public class MainActivity extends AppCompatActivity implements
 
         Bundle args = new Bundle();
         userActionListener.onUserAction(LOAD_LIST_OF_CURRENCIES_FROM, args);
-        userActionListener.onUserAction(LOAD_LIST_OF_CURRENCIES_TO, new Bundle());
     }
 
     @Override
@@ -53,25 +55,43 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void displayUserActionResult(ConverterModel model, ConvertorUserActionEnum userAction,
+    public void displayUserActionResult(ConverterModel model, ConverterUserActionEnum userAction,
                                         boolean success) {
         switch (userAction) {
             case LOAD_LIST_OF_CURRENCIES_FROM:
-                if (success){
-                    int n = 20;
-                } else {
-                    int n = 100;
-                }
+                Currency from = model.getOriginCurrencies().get(0);
+                Currency to = model.getOriginCurrencies().get(1);
+                double amount = 999.9;
+                Bundle args = new Bundle();
+                args.putString(KEY_CURRENCY_ID_FROM, from.getCurrencyId());
+                args.putString(KEY_CURRENCY_ID_TO, to.getCurrencyId());
+                args.putDouble(KEY_ENTERED_AMOUNT, amount);
+                userActionListener.onUserAction(CONVERT_CURRENCIES, args);
+
+                // request currency by Id
+                String id = from.getCurrencyId();
+                Bundle arg2 = new Bundle();
+                arg2.putString(KEY_LOADING_CURRENCY_BY_ID_CURRENCY_ID, id);
+                arg2.putString(KEY_LOADING_CURRENCY_BY_ID_REQUEST_TYPE,
+                        KEY_CURRENCY_REQUEST_BY_ID_FROM);
+                userActionListener.onUserAction(LOAD_CURRENCY_BY_ID, arg2);
+
                 break;
             case LOAD_LIST_OF_CURRENCIES_TO:
-                if (success){
-                    int n = 20;
-                } else {
-                    int n = 100;
-                }
-                break;
-            default:
 
+                break;
+            case CONVERT_CURRENCIES:
+                double value = model.getConvertedValue();
+                Toast.makeText(MainActivity.this, "Converted value: " + value, Toast.LENGTH_SHORT)
+                        .show();
+                break;
+            case LOAD_CURRENCY_BY_ID:
+                Currency fr = model.getCurrencyForRequest(KEY_CURRENCY_REQUEST_BY_ID_FROM);
+                if (null != fr){
+
+                }
+
+            default:
         }
     }
 
