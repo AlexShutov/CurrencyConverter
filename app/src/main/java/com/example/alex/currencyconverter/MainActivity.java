@@ -29,6 +29,7 @@ public class MainActivity extends AppCompatActivity implements
 
         Bundle args = new Bundle();
         userActionListener.onUserAction(LOAD_LIST_OF_CURRENCIES_FROM, args);
+        userActionListener.onUserAction(LOAD_LIST_OF_CURRENCIES_TO, new Bundle());
     }
 
     @Override
@@ -52,7 +53,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void displayUserActionResult(ConverterModel model, ConvertorUserActionEnum userAction, boolean success) {
+    public void displayUserActionResult(ConverterModel model, ConvertorUserActionEnum userAction,
+                                        boolean success) {
         switch (userAction) {
             case LOAD_LIST_OF_CURRENCIES_FROM:
                 if (success){

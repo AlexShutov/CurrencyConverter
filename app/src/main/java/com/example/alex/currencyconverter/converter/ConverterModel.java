@@ -3,6 +3,7 @@ package com.example.alex.currencyconverter.converter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
+import com.example.alex.currencyconverter.LoadCurrenciesFromDatabaseTask;
 import com.example.alex.currencyconverter.SyncTableTask;
 import com.example.alex.currencyconverter.archframework.Model;
 import com.example.alex.currencyconverter.archframework.QueryEnum;
@@ -11,6 +12,8 @@ import com.example.alex.currencyconverter.dao.CurrencyDao;
 import com.example.alex.currencyconverter.model.app.Currency;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -79,8 +82,8 @@ public class ConverterModel implements Model<ConverterModel.ConvertorQueryEnum,
     }
 
     @Override
-    public void deliverUserAction(ConvertorUserActionEnum action,
-                                  @Nullable Bundle args, UserActionCallback callback) {
+    public void deliverUserAction(final ConvertorUserActionEnum action,
+                                  @Nullable Bundle args, final UserActionCallback callback) {
         switch (action){
             case LOAD_LIST_OF_CURRENCIES_FROM:
                 // load data from database
@@ -89,41 +92,48 @@ public class ConverterModel implements Model<ConverterModel.ConvertorQueryEnum,
                 if (args.containsKey(KEY_OTHER_CURRENCY_ID)){
                     skipIdFrom = args.getString(KEY_OTHER_CURRENCY_ID);
                 }
-
-                List<Currency> resFrom = currencyDao.getAllCurrencyRates();
-                if (null != skipIdFrom){
-                    List<Currency> filtered = new ArrayList<>();
-                    for (Currency c : resFrom){
-                        if (!c.getCurrencyId().equals(skipIdFrom)){
-                            filtered.add(c);
+                // load list of currencies from database asynchronously
+                LoadCurrenciesFromDatabaseTask loadTaskFrom = new LoadCurrenciesFromDatabaseTask(
+                        currencyDao,
+                        null == skipIdFrom ? null : Arrays.asList(skipIdFrom),
+                        new LoadCurrenciesFromDatabaseTask.DbFetchCallback() {
+                            @Override
+                            public void onCurrenciesLoaded(List<Currency> currencies) {
+                                // save loaded currencies in model
+                                setOriginCurrencies(currencies);
+                                callback.onModelUpdated(ConverterModel.this, action);
+                            }
                         }
-                    }
-                    resFrom = filtered;
-                }
-                callback.onModelUpdated(this, action);
+                );
+                loadTaskFrom.execute();
                 break;
 
             case LOAD_LIST_OF_CURRENCIES_TO:
-                // load data from database
                 String skipIdTo = null;
                 if (args.containsKey(KEY_OTHER_CURRENCY_ID)){
-                    skipIdTo = args.getString(KEY_OTHER_CURRENCY_ID);
+                    skipIdFrom = args.getString(KEY_OTHER_CURRENCY_ID);
                 }
-
-                List<Currency> resTo = currencyDao.getAllCurrencyRates();
-                if (null != skipIdTo){
-                    List<Currency> filtered = new ArrayList<>();
-                    for (Currency c : resTo){
-                        if (!c.getCurrencyId().equals(skipIdTo)){
-                            filtered.add(c);
+                // load list of currencies from database asynchronously
+                LoadCurrenciesFromDatabaseTask loadTaskTo = new LoadCurrenciesFromDatabaseTask(
+                        currencyDao,
+                        null == skipIdTo ? null : Arrays.asList(skipIdTo),
+                        new LoadCurrenciesFromDatabaseTask.DbFetchCallback() {
+                            @Override
+                            public void onCurrenciesLoaded(List<Currency> currencies) {
+                                // save loaded currencies in model
+                                setDestinationCurrencies(currencies);
+                                callback.onModelUpdated(ConverterModel.this, action);
+                            }
                         }
-                    }
-                    resTo = filtered;
-                }
-                callback.onModelUpdated(this, action);
+                );
+                loadTaskTo.execute();
                 break;
+
+
+            default:
         }
     }
+
 
     // Accessors
 
