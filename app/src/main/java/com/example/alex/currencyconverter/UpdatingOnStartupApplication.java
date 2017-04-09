@@ -1,7 +1,11 @@
 package com.example.alex.currencyconverter;
 
 import android.app.Application;
+import android.widget.Toast;
 
+import com.example.alex.currencyconverter.archframework.Model;
+import com.example.alex.currencyconverter.archframework.QueryEnum;
+import com.example.alex.currencyconverter.converter.ConverterModel;
 import com.example.alex.currencyconverter.dao.impl.CurrencyDaoImpl;
 import com.example.alex.currencyconverter.model.app.Currency;
 
@@ -20,6 +24,8 @@ public class UpdatingOnStartupApplication extends Application {
     private SyncTableTask syncTask;
     private CurrencyDaoImpl dao;
 
+    private ConverterModel converterModel;
+
     private SyncTableTask.SyncCallback syncCallback = new SyncTableTask.SyncCallback() {
         @Override
         public void handleUpdateResultOnUiThread(List<Currency> syncedModel) {
@@ -36,7 +42,21 @@ public class UpdatingOnStartupApplication extends Application {
     public void onCreate() {
         super.onCreate();
         dao = new CurrencyDaoImpl(this);
-        attemptSync();
+        converterModel = new ConverterModel(dao);
+        converterModel.requestData(ConverterModel.ConvertorQueryEnum.SYNC_DATABASE,
+                new Model.DataQueryCallback() {
+                    @Override
+                    public void onModelUpdated(Model model, QueryEnum query) {
+                        Toast.makeText(UpdatingOnStartupApplication.this,
+                                "Database synced", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onError(QueryEnum query) {
+                        Toast.makeText(UpdatingOnStartupApplication.this,
+                                "Database update failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     @Override
@@ -76,4 +96,7 @@ public class UpdatingOnStartupApplication extends Application {
         attemptSync(syncCallback);
     }
 
+    public ConverterModel getConverterModel() {
+        return converterModel;
+    }
 }
