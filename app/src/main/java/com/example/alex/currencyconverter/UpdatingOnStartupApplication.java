@@ -35,6 +35,7 @@ public class UpdatingOnStartupApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        dao = new CurrencyDaoImpl(this);
         attemptSync();
     }
 
@@ -55,7 +56,7 @@ public class UpdatingOnStartupApplication extends Application {
             throw new IllegalStateException("App undergo sync right now");
         }
         // create new sync task
-        syncTask = new SyncTableTask(new SyncTableTask.SyncCallback() {
+        syncTask = new SyncTableTask(dao, new SyncTableTask.SyncCallback() {
             @Override
             public void handleUpdateResultOnUiThread(List<Currency> syncedModel) {
                 action.handleUpdateResultOnUiThread(syncedModel);

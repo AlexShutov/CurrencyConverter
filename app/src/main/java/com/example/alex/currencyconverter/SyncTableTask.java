@@ -2,10 +2,12 @@ package com.example.alex.currencyconverter;
 
 import android.os.AsyncTask;
 
+import com.example.alex.currencyconverter.dao.CurrencyDao;
+import com.example.alex.currencyconverter.model.WebToAppModelConverterImpl;
 import com.example.alex.currencyconverter.model.app.Currency;
 import com.example.alex.currencyconverter.parsing.WebResponseParser;
 import com.example.alex.currencyconverter.parsing.impl.WebResponseSimpleXmlParser;
-import com.example.alex.currencyconverter.web.WebFetcher;
+import com.example.alex.currencyconverter.web.WebFetcherImpl;
 
 
 import java.io.IOException;
@@ -33,12 +35,14 @@ public class SyncTableTask extends AsyncTask<Void, Void, List<Currency>> {
     }
 
     private WeakReference<SyncCallback> uiCallback;
+    private CurrencyDao dao;
 
     /**
      * Save reference to callback.
      * @param resultAction
      */
-    public SyncTableTask(SyncCallback resultAction){
+    public SyncTableTask(CurrencyDao dao, SyncCallback resultAction){
+        this.dao = dao;
         uiCallback = new WeakReference<>(resultAction);
     }
 
@@ -54,11 +58,13 @@ public class SyncTableTask extends AsyncTask<Void, Void, List<Currency>> {
         // use SimpleXml library for parsing web response
         WebResponseParser parser = new WebResponseSimpleXmlParser();
         // uses out-of-the-box HttpUrlConnection
-        WebFetcher webFetcher = new WebFetcher();
-
+        WebFetcherImpl webFetcherImpl = new WebFetcherImpl();
+        // Dagger would be much more convenient to use instead of manual creation
         builder.setWebAddressUrl(url);
         builder.setParser(parser);
-        builder.setWebFetcher(webFetcher);
+        builder.setWebFetcher(webFetcherImpl);
+        builder.setModelConverter(new WebToAppModelConverterImpl());
+        builder.setDao(dao);
         SyncFacade syncFacade = builder.build();
         try {
             List<Currency> syncedResult = syncFacade.performSync();

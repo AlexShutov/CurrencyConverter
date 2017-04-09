@@ -148,7 +148,7 @@ public abstract class DatabaseTest {
         dao.saveCurrency(c);
         Currency c2 = dao.getCurrencyById("2");
     }
-    
+
     /**
      * Receives two arrays of Currency objects and verifies that symmetric difference
      * of sets of ID elements is empty.
