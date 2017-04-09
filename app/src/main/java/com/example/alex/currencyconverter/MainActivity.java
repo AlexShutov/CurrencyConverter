@@ -1,15 +1,19 @@
 package com.example.alex.currencyconverter;
 
 import android.content.Context;
+import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import com.example.alex.currencyconverter.archframework.PresenterImpl;
 import com.example.alex.currencyconverter.archframework.UpdatableView;
 import com.example.alex.currencyconverter.converter.ConverterModel;
+import com.example.alex.currencyconverter.databinding.ConverterLayoutBinding;
 import com.example.alex.currencyconverter.model.app.Currency;
+import com.example.alex.currencyconverter.model.ui.CurrencyPickerModel;
 
 import java.util.List;
 
@@ -22,16 +26,23 @@ public class MainActivity extends AppCompatActivity implements
     private static final String KEY_CURRENCY_REQUEST_BY_ID_FROM = "currency_from";
     private static final String KEY_CURRENCY_REQUEST_BY_ID_TO = "currency_to";
 
+    // Link to Presenter
     private UserActionListener userActionListener;
+
+    // Databinding refrence
+    private ConverterLayoutBinding viewBinding;
+    // View models
+    // View model for original currency
+    private CurrencyPickerModel fromViewModel;
+    // View model for desirable currency
+    private CurrencyPickerModel toViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        viewBinding = DataBindingUtil.setContentView(this, R.layout.converter_layout);
         initMvp();
-
-        Bundle args = new Bundle();
-        userActionListener.onUserAction(LOAD_LIST_OF_CURRENCIES_FROM, args);
+        setupWidgets();
     }
 
     @Override
@@ -59,37 +70,18 @@ public class MainActivity extends AppCompatActivity implements
                                         boolean success) {
         switch (userAction) {
             case LOAD_LIST_OF_CURRENCIES_FROM:
-                Currency from = model.getOriginCurrencies().get(0);
-                Currency to = model.getOriginCurrencies().get(1);
-                double amount = 999.9;
-                Bundle args = new Bundle();
-                args.putString(KEY_CURRENCY_ID_FROM, from.getCurrencyId());
-                args.putString(KEY_CURRENCY_ID_TO, to.getCurrencyId());
-                args.putDouble(KEY_ENTERED_AMOUNT, amount);
-                userActionListener.onUserAction(CONVERT_CURRENCIES, args);
 
-                // request currency by Id
-                String id = from.getCurrencyId();
-                Bundle arg2 = new Bundle();
-                arg2.putString(KEY_LOADING_CURRENCY_BY_ID_CURRENCY_ID, id);
-                arg2.putString(KEY_LOADING_CURRENCY_BY_ID_REQUEST_TYPE,
-                        KEY_CURRENCY_REQUEST_BY_ID_FROM);
-                userActionListener.onUserAction(LOAD_CURRENCY_BY_ID, arg2);
 
                 break;
             case LOAD_LIST_OF_CURRENCIES_TO:
 
                 break;
             case CONVERT_CURRENCIES:
-                double value = model.getConvertedValue();
-                Toast.makeText(MainActivity.this, "Converted value: " + value, Toast.LENGTH_SHORT)
-                        .show();
+
                 break;
             case LOAD_CURRENCY_BY_ID:
-                Currency fr = model.getCurrencyForRequest(KEY_CURRENCY_REQUEST_BY_ID_FROM);
-                if (null != fr){
 
-                }
+                break;
 
             default:
         }
@@ -127,4 +119,50 @@ public class MainActivity extends AppCompatActivity implements
                 ConvertorQueryEnum.values());
         addListener(presenter);
     }
+
+    private void setupWidgets() {
+        fromViewModel = new CurrencyPickerModel();
+        viewBinding.currencyPickerFrom.setModel(fromViewModel);
+
+        final Currency currency = new Currency();
+        currency.setName("Some currency");
+        currency.setExchangeValueInRoubles(123);
+        fromViewModel.setCurrency(currency);
+        fromViewModel.setSelectPrompt(getString(R.string.select_currency_from));
+        fromViewModel.setCurrencyPicked(true);
+        fromViewModel.setRemoveClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fromViewModel.setCurrency(null);
+                fromViewModel.setCurrencyPicked(false);
+                Toast.makeText(MainActivity.this, "clear", Toast.LENGTH_SHORT).show();
+            }
+        });
+        fromViewModel.setPickCurrencyListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Picking currency", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        toViewModel = new CurrencyPickerModel();
+        viewBinding.currencyPickerTo.setModel(toViewModel);
+        toViewModel.setCurrency(currency);
+        toViewModel.setSelectPrompt(getString(R.string.select_currency_to));
+        toViewModel.setCurrencyPicked(true);
+        toViewModel.setRemoveClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toViewModel.setCurrency(null);
+                toViewModel.setCurrencyPicked(false);
+            }
+        });
+        toViewModel.setPickCurrencyListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(MainActivity.this, "Picking currency", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 }

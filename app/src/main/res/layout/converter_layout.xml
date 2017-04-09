@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <variable
+            name="foo"
+            type="int"/>
+    </data>
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/green_100"
+        >
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <FrameLayout
+                    android:id="@+id/currency_selector_from_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="56dp">
+                    <include
+                        layout="@layout/currency_picker"
+                        android:id="@+id/currency_picker_from"
+
+                        />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:id="@+id/currency_selector_to_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/currency_selector_from_container"
+                    android:layout_marginTop="8dp">
+                    <include
+                        layout="@layout/currency_picker"
+                        android:id="@+id/currency_picker_to"
+
+                        />
+                </FrameLayout>
+
+
+
+            </RelativeLayout>
+        </ScrollView>
+
+    </FrameLayout>
+</layout>

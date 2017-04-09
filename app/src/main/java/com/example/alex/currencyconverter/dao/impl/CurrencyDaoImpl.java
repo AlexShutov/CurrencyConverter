@@ -45,7 +45,7 @@ public class CurrencyDaoImpl implements CurrencyDao {
      * @return
      */
     @Override
-    public List<Currency> getAllCurrencyRates() {
+    public synchronized List<Currency> getAllCurrencyRates() {
         List<Currency> currencies = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String selectQuery = "SELECT  * FROM " + TABLE_NAME;
@@ -69,7 +69,7 @@ public class CurrencyDaoImpl implements CurrencyDao {
     }
 
     @Override
-    public Currency getCurrencyById(String id) throws IllegalArgumentException {
+    public synchronized Currency getCurrencyById(String id) throws IllegalArgumentException {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         String selectQuery = "SELECT  * FROM " + TABLE_NAME + " WHERE "
                 + COLUMN_CURRENCY_ID + " = " + id;

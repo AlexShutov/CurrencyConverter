@@ -68,7 +68,6 @@ public class SyncTableTask extends AsyncTask<Void, Void, List<Currency>> {
         SyncFacade syncFacade = builder.build();
         try {
             List<Currency> syncedResult = syncFacade.performSync();
-
             return syncedResult;
         } catch (IOException e) {
             e.printStackTrace();

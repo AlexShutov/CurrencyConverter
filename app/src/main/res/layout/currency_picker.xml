@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <data>
+        <import type="java.lang.String"/>
+        <import type="android.view.View"/>
+        <import type="com.example.alex.currencyconverter.model.app.Currency"/>
+        <variable
+            name="model"
+            type="com.example.alex.currencyconverter.model.ui.CurrencyPickerModel"/>
+    </data>
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        style="@style/CardViewStyle"
+        app:cardBackgroundColor="@{model.currencyPicked ? @color/green_500 : @color/amber_800}"
+        android:onClick="@{(v) -> !model.currencyPicked ? model.pickCurrencyListener.onClick(v): null}"
+        >
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!--View, prompting to select currency-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{model.currencyPicked ? View.GONE : View.VISIBLE}"
+                >
+                <FrameLayout
+                    android:id="@+id/empty_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:visibility="visible">
+                    <TextView
+                        android:id="@+id/empty_view_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="30sp"
+                        android:textColor="@color/color_white"
+                        android:text="@{model.selectPrompt}"
+                        android:textAllCaps="false"
+                        />
+                </FrameLayout>
+            </RelativeLayout>
+
+            <!--View, displaying selected currency-->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="@{model.currencyPicked ? View.VISIBLE : View.GONE}">
+
+                <ImageButton
+                    android:id="@+id/remove_currency"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:padding="8dp"
+                    android:background="@null"
+                    android:src="@drawable/ic_close_white_48dp"
+                    android:onClick="@{(v) -> model.removeClickListener.onClick(v)}"
+                    />
+
+                    <LinearLayout
+                        android:id="@+id/currency_exchange_rate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_centerVertical="true"
+                        android:layout_toLeftOf="@id/remove_currency"
+                        android:layout_marginLeft="8dp"
+                        android:layout_marginRight="8dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:textColor="@color/color_white"
+                            android:textAllCaps="false"
+                            android:text="@{String.valueOf(model.currency.exchangeValueInRoubles)}"
+                            />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="16sp"
+                            android:textColor="@color/color_white"
+                            android:text="@string/roubles_name"
+                            android:textAllCaps="false"
+                            />
+                    </LinearLayout>
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentLeft="true"
+                        android:layout_toLeftOf="@id/currency_exchange_rate"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp">
+
+                            <!--Currency name-->
+                            <TextView
+                                android:id="@+id/currency_name"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:layout_alignParentLeft="true"
+                                android:layout_centerVertical="true"
+                                android:textSize="20sp"
+                                android:textColor="@color/color_white"
+                                android:text="@{model.currency.name}"
+                                android:textAllCaps="false"
+                                />
+
+                    </FrameLayout>
+
+                </RelativeLayout>
+
+        </FrameLayout>
+
+    </android.support.v7.widget.CardView>
+</layout>

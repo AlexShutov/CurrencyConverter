@@ -95,15 +95,14 @@ public class ConverterModel implements Model<ConverterModel.ConvertorQueryEnum,
         syncTask = new SyncTableTask(currencyDao, new SyncTableTask.SyncCallback() {
             @Override
             public void handleUpdateResultOnUiThread(List<Currency> syncedModel) {
-                action.handleUpdateResultOnUiThread(syncedModel);
                 syncTask = null;
-
+                action.handleUpdateResultOnUiThread(syncedModel);
             }
 
             @Override
             public void onSyncFailed() {
-                action.onSyncFailed();
                 syncTask = null;
+                action.onSyncFailed();
             }
         });
         syncTask.execute();
@@ -210,10 +209,40 @@ public class ConverterModel implements Model<ConverterModel.ConvertorQueryEnum,
                 task.execute();
                 break;
 
+
             default:
         }
     }
 
+    /**
+     * Initializa this model. This method should be called when model is just
+     * created and we need to perform database synchronization.
+     * This method will be called not from View
+     * @param query
+     * @param callback
+     */
+    @Override
+    public void requestData(final ConvertorQueryEnum query, final DataQueryCallback callback) {
+        switch (query){
+            case SYNC_DATABASE:
+                try {
+                    attemptSync(new SyncTableTask.SyncCallback() {
+                        @Override
+                        public void handleUpdateResultOnUiThread(List<Currency> syncedModel) {
+                            callback.onModelUpdated(ConverterModel.this, query);
+                        }
+
+                        @Override
+                        public void onSyncFailed() {
+                            callback.onError(query);
+                        }
+                    });
+                } catch (IllegalStateException e){
+                    callback.onError(query);
+                }
+                break;
+        }
+    }
 
     // Accessors
 
@@ -249,36 +278,6 @@ public class ConverterModel implements Model<ConverterModel.ConvertorQueryEnum,
 
     public synchronized void setCurrencyForResult(String requestType, Currency result){
         currencyRequestResults.put(requestType, result);
-    }
-
-    /**
-     * Initializa this model. This method should be called when model is just
-     * created and we need to perform database synchronization.
-     * This method will be called not from View
-     * @param query
-     * @param callback
-     */
-    @Override
-    public void requestData(final ConvertorQueryEnum query, final DataQueryCallback callback) {
-        switch (query){
-            case SYNC_DATABASE:
-                try {
-                    attemptSync(new SyncTableTask.SyncCallback() {
-                        @Override
-                        public void handleUpdateResultOnUiThread(List<Currency> syncedModel) {
-                            callback.onModelUpdated(ConverterModel.this, query);
-                        }
-
-                        @Override
-                        public void onSyncFailed() {
-                            callback.onError(query);
-                        }
-                    });
-                } catch (IllegalStateException e){
-                    callback.onError(query);
-                }
-                break;
-        }
     }
 
     @Override

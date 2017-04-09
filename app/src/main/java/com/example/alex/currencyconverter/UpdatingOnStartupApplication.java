@@ -48,7 +48,7 @@ public class UpdatingOnStartupApplication extends Application {
                     @Override
                     public void onModelUpdated(Model model, QueryEnum query) {
                         Toast.makeText(UpdatingOnStartupApplication.this,
-                                "Database synced", Toast.LENGTH_SHORT).show();
+                                getString(R.string.database_synced), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
