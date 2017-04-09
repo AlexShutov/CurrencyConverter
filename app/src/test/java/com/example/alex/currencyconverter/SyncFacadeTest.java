@@ -132,13 +132,6 @@ public class SyncFacadeTest {
         facade.performSync();
     }
 
-    @Test
-    public void addition_isCorrect() throws Exception {
-        assertEquals(4, 2 + 2);
-
-        assertNotNull(webResponseParser);
-    }
-
     private void createSyncFacade(){
         facade = new SyncFacade.Builder()
                 .setParser(webResponseParser)

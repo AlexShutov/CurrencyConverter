@@ -4,6 +4,7 @@ import org.simpleframework.xml.Attribute;
 import org.simpleframework.xml.ElementList;
 import org.simpleframework.xml.Root;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,7 +15,7 @@ public class CurrencyTable {
 
     private String name;
     private String date;
-    private List<Currency> currencyRecords;
+    private List<Currency> currencyRecords = new ArrayList<>();
 
     @Attribute(name = "name")
     public String getName() {
