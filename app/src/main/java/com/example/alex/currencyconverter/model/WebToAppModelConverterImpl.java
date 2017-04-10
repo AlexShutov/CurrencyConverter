@@ -27,6 +27,7 @@ public class WebToAppModelConverterImpl implements WebToAppModelConverter {
             // replace Russian floating point format format: '.' instead of ','
             strRate = strRate.replace(',', '.');
             double roublesRate = Double.parseDouble(strRate);
+            roublesRate /= c.getNominal();
             converted.setExchangeValueInRoubles(roublesRate);
             String currencyId = String.valueOf(c.getNumberCode());
             converted.setCurrencyId(currencyId);

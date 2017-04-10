@@ -138,7 +138,7 @@ public class ConverterModel implements Model<ConverterModel.ConvertorQueryEnum,
             case LOAD_LIST_OF_CURRENCIES_TO:
                 String skipIdTo = null;
                 if (args.containsKey(KEY_OTHER_CURRENCY_ID)){
-                    skipIdFrom = args.getString(KEY_OTHER_CURRENCY_ID);
+                    skipIdTo = args.getString(KEY_OTHER_CURRENCY_ID);
                 }
                 // load list of currencies from database asynchronously
                 LoadCurrenciesFromDatabaseTask loadTaskTo = new LoadCurrenciesFromDatabaseTask(

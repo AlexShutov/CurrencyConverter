@@ -1,8 +1,10 @@
 package com.example.alex.currencyconverter;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,12 +30,16 @@ public class MainActivity extends AppCompatActivity implements
     private static final String PICK_FROM = "pick_from";
     private static final String PICK_TO = "pick_to";
 
-    private static final String KEY_CURRENCY_REQUEST_BY_ID_FROM = "currency_from";
-    private static final String KEY_CURRENCY_REQUEST_BY_ID_TO = "currency_to";
+    private static final String KEY_CURRENCY_SAVED_ID_FROM = "currency_from";
+    private static final String KEY_CURRENCY_SAVED_ID_TO = "currency_to";
 
     // Link to Presenter
     private UserActionListener userActionListener;
-
+    /**
+     * SharedPrefernces is used for storing Id of last selected currency. App will attempt
+     * to load in on startup
+     */
+    SharedPreferences prefs;
     // Databinding refrence
     private ConverterLayoutBinding viewBinding;
     // View models
@@ -46,8 +52,60 @@ public class MainActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         viewBinding = DataBindingUtil.setContentView(this, R.layout.converter_layout);
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
         initMvp();
         setupWidgets();
+    }
+
+    /**
+     * Save Id of selected currencies into SharedPreferences
+     */
+    @Override
+    protected void onPause() {
+        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Currency from = fromViewModel.getCurrency();
+        Currency to = toViewModel.getCurrency();
+        SharedPreferences.Editor edit = prefs.edit();
+        if (null != from) {
+            edit.putString(KEY_CURRENCY_SAVED_ID_FROM, from.getCurrencyId());
+        } else {
+            edit.remove(KEY_CURRENCY_SAVED_ID_FROM);
+        }
+        if (null != to) {
+            edit.putString(KEY_CURRENCY_SAVED_ID_TO, to.getCurrencyId());
+        } else {
+            edit.remove(KEY_CURRENCY_SAVED_ID_TO);
+        }
+        // save in background
+        edit.apply();
+        super.onPause();
+    }
+
+    /**
+     * Load ids of selected currencies from SharedPreferences and try to reload info
+     * on those currencies.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // reload 'from' currency after device rotation
+        if (prefs.contains(KEY_CURRENCY_SAVED_ID_FROM)){
+            String idFrom = prefs.getString(KEY_CURRENCY_SAVED_ID_FROM, "");
+            // load info on this currency
+            Bundle args = new Bundle();
+            args.putString(KEY_LOADING_CURRENCY_BY_ID_REQUEST_TYPE, KEY_CURRENCY_SAVED_ID_FROM);
+            args.putString(KEY_LOADING_CURRENCY_BY_ID_CURRENCY_ID, idFrom);
+            userActionListener.onUserAction(LOAD_CURRENCY_BY_ID, args);
+        }
+        // reload 'to' currency after device rotation
+        if (prefs.contains(KEY_CURRENCY_SAVED_ID_TO)){
+            String idFrom = prefs.getString(KEY_CURRENCY_SAVED_ID_TO, "");
+            // load info on this currency
+            Bundle args = new Bundle();
+            args.putString(KEY_LOADING_CURRENCY_BY_ID_REQUEST_TYPE, KEY_CURRENCY_SAVED_ID_TO);
+            args.putString(KEY_LOADING_CURRENCY_BY_ID_CURRENCY_ID, idFrom);
+            userActionListener.onUserAction(LOAD_CURRENCY_BY_ID, args);
+        }
     }
 
     @Override
@@ -92,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 break;
             case LOAD_CURRENCY_BY_ID:
+                // when user picked currency from list
                 Currency currencyFrom = model.getCurrencyForRequest(PICK_FROM);
                 if (null != currencyFrom){
                     fromViewModel.setCurrency(currencyFrom);
@@ -102,6 +161,18 @@ public class MainActivity extends AppCompatActivity implements
                     toViewModel.setCurrency(currencyTo);
                     toViewModel.setCurrencyPicked(true);
                 }
+                // when currency is saved after device rotation
+                currencyFrom = model.getCurrencyForRequest(KEY_CURRENCY_SAVED_ID_FROM);
+                if (null != currencyFrom){
+                    fromViewModel.setCurrency(currencyFrom);
+                    fromViewModel.setCurrencyPicked(true);
+                }
+                currencyTo = model.getCurrencyForRequest(KEY_CURRENCY_SAVED_ID_TO);
+                if (null != currencyTo){
+                    toViewModel.setCurrency(currencyTo);
+                    toViewModel.setCurrencyPicked(true);
+                }
+
                 chechInputTextReadiness();
                 break;
 
@@ -178,20 +249,6 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     /**
-     * Verifies that both currencies is selected by user and shows field for entering text
-     * if it is.
-     */
-    private void chechInputTextReadiness(){
-        boolean fromPicked = fromViewModel.isCurrencyPicked();
-        boolean toPicked = toViewModel.isCurrencyPicked();
-        if (fromPicked && toPicked){
-            Toast.makeText(MainActivity.this, "Both currencies is selected",
-                    Toast.LENGTH_SHORT).show();
-
-        }
-    }
-
-    /**
      * Select currency from table, stored in database. Ignore currency, selected by another
      * picker, e.g. if we're picking 'to' currency, ignore 'from' currency
      * @param keyCurrencyKind String key, specifying currency kind
@@ -209,10 +266,23 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             another = fromViewModel.getCurrency();
             if (null != another && null != another.getCurrencyId()) {
-                args.putString(KEY_OTHER_CURRENCY_ID, another.getCharCode());
+                args.putString(KEY_OTHER_CURRENCY_ID, another.getCurrencyId());
             }
             userActionListener.onUserAction(LOAD_LIST_OF_CURRENCIES_TO, args);
         }
     }
 
+    /**
+     * Verifies that both currencies is selected by user and shows field for entering text
+     * if it is.
+     */
+    private void chechInputTextReadiness(){
+        boolean fromPicked = fromViewModel.isCurrencyPicked();
+        boolean toPicked = toViewModel.isCurrencyPicked();
+        if (fromPicked && toPicked){
+            Toast.makeText(MainActivity.this, "Both currencies is selected",
+                    Toast.LENGTH_SHORT).show();
+
+        }
+    }
 }
