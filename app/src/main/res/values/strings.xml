@@ -5,4 +5,7 @@
     <string name="roubles_name">Руб</string>
     <string name="database_synced">Курсы валют загружены</string>
     <string name="button_cancel">Отмена</string>
+    <string name="button_convert">Преобразовать</string>
+    <string name="text_enter_valid_number">Сумма должна быть числом</string>
+    <string name="text_enter_negative">Введите положительное число</string>
 </resources>

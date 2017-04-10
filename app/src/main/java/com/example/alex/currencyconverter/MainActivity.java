@@ -5,11 +5,13 @@ import android.content.SharedPreferences;
 import android.databinding.DataBindingUtil;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.support.v4.app.FragmentManager;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.EditText;
 
 import com.example.alex.currencyconverter.archframework.PresenterImpl;
 import com.example.alex.currencyconverter.archframework.UpdatableView;
@@ -146,9 +148,6 @@ public class MainActivity extends AppCompatActivity implements
                 CurrencyDialogFragment df1 = CurrencyDialogFragment.newInstance(to, PICK_TO);
                 df1.show(getSupportFragmentManager(), "pick_to_currencies");
                 break;
-            case CONVERT_CURRENCIES:
-
-                break;
             case LOAD_CURRENCY_BY_ID:
                 // when user picked currency from list
                 Currency currencyFrom = model.getCurrencyForRequest(PICK_FROM);
@@ -175,7 +174,14 @@ public class MainActivity extends AppCompatActivity implements
 
                 chechInputTextReadiness();
                 break;
-
+            case CONVERT_CURRENCIES:
+                double converted = model.getConvertedValue();
+                String formattedResult = String.format("%.2f", converted);
+                viewBinding.conversionResult.setText(formattedResult);
+                // conversion is successful, we now know char code of destination
+                // currency
+                viewBinding.toCurrencyCode.setText(toViewModel.getCurrency().getCharCode());
+                break;
             default:
         }
     }
@@ -245,6 +251,7 @@ public class MainActivity extends AppCompatActivity implements
                 selectCurrencies(PICK_TO);
             }
         });
+        initEntryFieldAndConvertButton();
         chechInputTextReadiness();
     }
 
@@ -280,9 +287,103 @@ public class MainActivity extends AppCompatActivity implements
         boolean fromPicked = fromViewModel.isCurrencyPicked();
         boolean toPicked = toViewModel.isCurrencyPicked();
         if (fromPicked && toPicked){
-            Toast.makeText(MainActivity.this, "Both currencies is selected",
-                    Toast.LENGTH_SHORT).show();
-
+            // set currency code in input area
+            viewBinding.fromCurrencyCode.setText(fromViewModel.getCurrency().getCharCode());
+            viewBinding.amountEntryContainer.setVisibility(View.VISIBLE);
+        } else {
+            viewBinding.amountEntryContainer.setVisibility(View.GONE);
         }
+        // clear result fields
+        clearResultFields();
+        checkIfConvertButtonIsActive();
+    }
+
+    private void clearResultFields(){
+        viewBinding.conversionResult.setText("");
+        viewBinding.toCurrencyCode.setText("");
+    }
+
+    private void checkIfConvertButtonIsActive(){
+        boolean isBothCurrenciesPicked =
+                viewBinding.amountEntryContainer.getVisibility() == View.VISIBLE;
+        // container with amoun input field is hidden - user did not pick some currency,
+        // aborting.
+        if (!isBothCurrenciesPicked){
+            viewBinding.buttonConvert.setVisibility(View.GONE);
+            return;
+        }
+        viewBinding.buttonConvert.setVisibility(View.VISIBLE);
+    }
+
+    private void initEntryFieldAndConvertButton(){
+        EditText entryField = viewBinding.amountEntry;
+        entryField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                clearResultFields();
+                handleEnteredValue(String.valueOf(s));
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+        viewBinding.buttonConvert.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // get text, entered by user
+                String text = viewBinding.amountEntry.getText().toString();
+                // there will be no Exception, because button would not be visible
+                // in that case
+                double amount = parseValue(text);
+                // request currency conversion from model
+                Bundle args = new Bundle();
+                args.putString(KEY_CURRENCY_ID_FROM, fromViewModel.getCurrency().getCurrencyId());
+                args.putString(KEY_CURRENCY_ID_TO, toViewModel.getCurrency().getCurrencyId());
+                args.putDouble(KEY_ENTERED_AMOUNT, amount);
+                userActionListener.onUserAction(CONVERT_CURRENCIES, args);
+            }
+        });
+    }
+
+    /**
+     * Verify if entered value is valid and change visibility of 'convert' button
+     * accordingly.
+     * @param input
+     */
+    private void handleEnteredValue(String input){
+        TextInputLayout entryLayout = viewBinding.amountEntryLayout;
+        double val = 0;
+        try {
+            val = parseValue(input);
+        } catch (IllegalArgumentException e){
+            entryLayout.setError(getString(R.string.text_enter_valid_number));
+            // hide convert button
+            viewBinding.buttonConvert.setVisibility(View.GONE);
+            return;
+        }
+        if (val < 0){
+            entryLayout.setError(getString(R.string.text_enter_negative));
+            viewBinding.buttonConvert.setVisibility(View.GONE);
+            return;
+        }
+        // user input is correct
+        entryLayout.setError("");
+        viewBinding.buttonConvert.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Parses values, entered by user;
+     * @param text
+     * @return
+     */
+    double parseValue(String text) throws IllegalArgumentException{
+        text = text.replace(',', '.');
+        double val = Double.valueOf(text);
+        return val;
     }
 }
