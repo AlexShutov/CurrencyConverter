@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout>
+        <data>
+                <variable
+                    name="foo"
+                    type="int"/>
+        </data>
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/green_050">
+                <Button
+                    android:id="@+id/button_cancel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentBottom="true"
+                    android:background="@color/green_300"
+                    android:textColor="@color/color_white"
+                    android:text="@string/button_cancel"
+                    android:textSize="25sp"
+                    android:textAllCaps="false"
+                    />
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/currencies_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_above="@id/button_cancel"
+                    />
+
+        </RelativeLayout>
+</layout>

@@ -39,7 +39,7 @@ public class WebFetcherImpl implements WebFetcher {
             if (HttpURLConnection.HTTP_OK == responseCode) {
                 InputStream inputStream = connection.getInputStream();
                 BufferedReader streamReader = new BufferedReader(
-                        new InputStreamReader(inputStream, "UTF-8"));
+                        new InputStreamReader(inputStream, "CP1251"));
                 StringBuilder responseStrBuilder = new StringBuilder();
                 String inputStr;
                 while ((inputStr = streamReader.readLine()) != null)

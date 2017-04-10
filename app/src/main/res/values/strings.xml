@@ -4,4 +4,5 @@
     <string name="select_currency_to">Выберите желаемую валюту</string>
     <string name="roubles_name">Руб</string>
     <string name="database_synced">Курсы валют загружены</string>
+    <string name="button_cancel">Отмена</string>
 </resources>
